@@ -1,0 +1,40 @@
+
+nav {
+  padding: 2rem 2rem 2rem 6rem;
+}
+
+.landing-main div {
+  margin-left: 2rem;
+}
+
+.mobiles-pic {
+  margin-left: 13rem;
+}
+
+.landing-main div:nth-child(1) {
+  margin-bottom: 1.5rem;
+}
+
+.landing-main div:nth-child(2) {
+  margin-bottom: 1.5rem;
+}
+
+.landing-main div:nth-child(3) {
+  padding: 0.5rem 0.5rem;
+}
+
+.auth-div {
+  padding: 6rem 3rem 0 3rem;
+}
+
+.auth-div div:nth-child(1) {
+  margin-bottom: 0.5rem;
+}
+
+.auth-div div:nth-child(2) {
+  margin-bottom: 1rem;
+}
+
+/* .auth-div form:nth-child(1) {
+  margin-bottom: 0.5rem;
+} */
