@@ -13,6 +13,7 @@ import MicOffIcon from '@mui/icons-material/MicOff'
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import ChatIcon from '@mui/icons-material/Chat'
+import { useNavigate } from "react-router-dom";
 
 
  let connections = {}
@@ -48,6 +49,7 @@ import ChatIcon from '@mui/icons-material/Chat'
   let [username, setUsername] = useState("")
   const videoRef = useRef([])
   let [videos, setVideos] = useState([])
+  let routeTo = useNavigate()
 
     // if(isChrome() === "false"){
 
@@ -117,8 +119,14 @@ import ChatIcon from '@mui/icons-material/Chat'
         }
     }
 
-    let addMessage = () => {
-
+    let addMessage = (data, sender, socketIdSender) => {
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: sender, data: data }
+        ]);
+        if (socketIdSender !== socketIdRef.current) {
+            setnewMessages((prevNewMessages) => prevNewMessages + 1);
+        }
     }
 
     const server_url = "http://localhost:3000"
@@ -315,6 +323,56 @@ import ChatIcon from '@mui/icons-material/Chat'
       }
     } 
 
+    let getDisplayMedia = () => {
+        if(screen) {
+            if(navigator.mediaDevices.getDisplayMedia) {
+                navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+                    .then(getDislayMediaSuccess)
+                    .then((stream) => { })
+                    .catch((e) => console.log(e))
+            }
+        }  
+    }
+
+    let getDislayMediaSuccess = (stream) => {
+        try {
+            window.localStream.getTracks().forEach(track => track.stop())
+        } catch (e) { console.log(e) }
+
+        window.localStream = stream
+        localVideoRef.current.srcObject = stream
+
+        for (let id in connections) {
+            if (id === socketIdRef.current) continue
+
+            connections[id].addStream(window.localStream)
+
+            connections[id].createOffer().then((description) => {
+                connections[id].setLocalDescription(description)
+                    .then(() => {
+                        socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
+                    })
+                    .catch(e => console.log(e))
+            })
+        }
+
+        stream.getTracks().forEach(track => track.onended = () => {
+            setScreen(false)
+
+            try {
+                let tracks = localVideoRef.current.srcObject.getTracks()
+                tracks.forEach(track => track.stop())
+            } catch (e) { console.log(e) }
+
+            let blackSilence = (...args) => new MediaStream([black(...args), silence()])
+            window.localStream = blackSilence()
+            localVideoRef.current.srcObject = window.localStream
+
+            getUserMedia()
+
+        })
+    }
+
     let handleVideo = () => {
         setVideo(!video)
         // getUserMedia()
@@ -323,6 +381,15 @@ import ChatIcon from '@mui/icons-material/Chat'
     let handleAudio = () => {
         setAudio(!audio)
         // getUserMedia()
+    }
+
+    let handleScreen = () => {
+        setScreen(!screen)
+    }
+
+    let sendMessage = () => {
+      socketRef.current.emit("chat-message", message, username)
+      setMessage("")
     }
 
     useEffect(() => {
@@ -334,6 +401,20 @@ import ChatIcon from '@mui/icons-material/Chat'
          getUserMedia()
       }
     }, [audio, video])
+
+    useEffect(()=> {
+      if(screen !== undefined){
+        getDisplayMedia()
+      }
+    },[screen])
+
+    let handleEndCall = () => {
+        try {
+            let tracks = localVideoRef.current.srcObject.getTracks()
+            tracks.forEach(track => track.stop())
+        } catch (e) { }
+        routeTo("/home")
+    }
     
     return (
         <div>
@@ -350,13 +431,44 @@ import ChatIcon from '@mui/icons-material/Chat'
                <Button variant="contained" onClick={connect}>connect</Button>
 
                <div>
-                  <video ref={localVideoRef} autoPlay></video>
+                  <video ref={localVideoRef} autoPlay muted></video>
                </div>
 
             </div> : 
+
             <div className="w-[100vw] h-[100vh] relative bg-[#111111]">
-             {video ?<video ref={localVideoRef} autoPlay className="host-video absolute h-[15rem] w-[auto] bottom-[10vh] right-16"></video> : <></>}
-                    <div className="users flex flex-wrap gap-4">
+
+                    { showModal ?
+                    
+                    <div className="absolute h-[37rem] w-[22%] bg-white right-0">
+
+                        <div className="" style={{padding: "1rem"}}>
+                            <h1>Chat</h1>
+
+                            <div className="h-[30rem]">
+
+                                {messages.length !== 0 ? messages.map((item, index) => {
+                                    // console.log(messages)
+                                    return (
+                                        <div style={{ marginBottom: "20px" }} key={index}>
+                                            <p style={{ fontWeight: "bold" }}>{item.sender}</p>
+                                            <p>{item.data}</p>
+                                        </div>
+                                    )
+                                }) : <p>No messages yet</p>}
+
+                            </div>
+
+                            <div className="" >
+                                <TextField value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter Your Message" variant="outlined" />
+                                <Button variant='contained' onClick={sendMessage}>Send</Button>
+                            </div>
+
+                        </div>
+                    </div> : <></>}
+
+             {video ? <video ref={localVideoRef} autoPlay muted className="host-video absolute h-[15rem] w-[auto] bottom-[10vh] left-16"></video> : <></>}
+                    <div className="users flex flex-wrap gap-4" style={{paddingInline: "1rem"}}>
                         {videos.map((video) => (
                             <div key={video.socketId} className="ind-user">
                                 <video
@@ -368,6 +480,7 @@ import ChatIcon from '@mui/icons-material/Chat'
                                         }
                                     }}
                                     autoPlay
+                                    muted
                                 >
                                 </video>
                             </div>
@@ -378,16 +491,18 @@ import ChatIcon from '@mui/icons-material/Chat'
                         { video === true ? <VideocamIcon/> : <VideocamOffIcon/> }
                     </IconButton>
                     <IconButton>
-                         <CallEndIcon style={{color:"red"}}/>
+                         <CallEndIcon onClick={handleEndCall} style={{color:"red"}}/>
                     </IconButton>
                     <IconButton onClick={handleAudio}>
                         { audio === true ? <MicIcon/> : <MicOffIcon/> }
                     </IconButton>
-                    <IconButton>
+                    { video ?
+                    <IconButton onClick={handleScreen}>
                         { screen === true ? <ScreenShareIcon/> : <StopScreenShareIcon/> }
-                    </IconButton>
+                    </IconButton> :<></>
+                    }
                     <Badge badgeContent={newMessages} color="primary">
-                      <IconButton>
+                      <IconButton onClick={() => setModal(!showModal)}>
                          <ChatIcon/>
                       </IconButton>
                     </Badge>

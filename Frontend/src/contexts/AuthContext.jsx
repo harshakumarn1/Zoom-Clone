@@ -14,7 +14,7 @@ export const AuthProvider = ({children}) => {
 
   const [userData, setuserData] = useState(authContext)
 
-  const router = useNavigate()
+  const routeTo = useNavigate()
 
   const handleRegister = async (name, username, password) => {
 
@@ -48,7 +48,7 @@ export const AuthProvider = ({children}) => {
 
         if(response.status === httpStatus.OK){
           localStorage.setItem("token", response.data.token)
-          router('/')
+          routeTo('/')
         }
         
     } catch (e) {
