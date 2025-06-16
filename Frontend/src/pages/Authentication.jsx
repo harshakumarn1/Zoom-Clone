@@ -5,6 +5,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { AuthContext } from '../contexts/Authcontext.jsx';
 import Snackbar from '@mui/material/Snackbar';
 import '../App.css'
+import { useNavigate } from 'react-router-dom';
 
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -22,10 +23,13 @@ export default function Authentication() {
 
     const [open, setOpen] = React.useState(false)
 
+    const routeTo = useNavigate();
+
 
     const { handleRegister, handleLogin } = React.useContext(AuthContext);
 
     let handleAuth = async () => {
+
         try {
 
             if (formState === 0) {
@@ -33,11 +37,12 @@ export default function Authentication() {
                 setUsername("");
                 setPassword("")
                 setError("")
+                routeTo('/home')
             }
 
             if (formState === 1) {
                 let result = await handleRegister(name, username, password);
-                console.log(result);
+                // console.log(result);
                 setName("")
                 setUsername("");
                 setMessage(result);
@@ -45,6 +50,7 @@ export default function Authentication() {
                 setError("")
                 setFormState(0)
                 setPassword("")
+                routeTo('/auth')
             }
         } catch (err) {
             console.log(err);

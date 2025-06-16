@@ -8,9 +8,9 @@ export default function LandingPage() {
             <nav className='flex justify-between'>
                <div className='logo text-white text-3xl font-semibold'>Agni  Video  Call</div>
                <div className='nav-list flex gap-4'>
-                 <div className='text-white font-semibold'><a href="#" className='no-underline'>join as Guest</a></div>
-                 <div className='text-white font-semibold'><a href="#" className='no-underline'>Register</a></div>
-                 <div className='text-white font-semibold'><a href="#" className='no-underline'>Login</a></div>
+                 <div className='text-white font-semibold'><a href="/randomMeetCode" className='no-underline'>join as Guest</a></div>
+                 <div className='text-white font-semibold'><a href="/auth" className='no-underline'>Register</a></div>
+                 <div className='text-white font-semibold'><a href="/auth" className='no-underline'>Login</a></div>
                </div>
             </nav>
 
@@ -23,7 +23,7 @@ export default function LandingPage() {
                  </div>
                  <div className='text-3xl font-semibold'>cover a Distance by Agni Video call</div>
                  <div role='button' className='text-white text-center px-4 text-2xl bg-orange-400 h-12 w-36 rounded'>
-                   <a href="#">Get started</a>
+                   <a href="/auth">Get started</a>
                  </div>     
                </div>
 

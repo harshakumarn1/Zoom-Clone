@@ -431,7 +431,7 @@ import { useNavigate } from "react-router-dom";
                <Button variant="contained" onClick={connect}>connect</Button>
 
                <div>
-                  <video ref={localVideoRef} autoPlay muted></video>
+                  <video ref={localVideoRef} autoPlay></video>
                </div>
 
             </div> : 
@@ -467,7 +467,7 @@ import { useNavigate } from "react-router-dom";
                         </div>
                     </div> : <></>}
 
-             {video ? <video ref={localVideoRef} autoPlay muted className="host-video absolute h-[15rem] w-[auto] bottom-[10vh] left-16"></video> : <></>}
+             {video ? <video ref={localVideoRef} autoPlay className="host-video absolute h-[15rem] w-[auto] bottom-[10vh] left-16"></video> : <></>}
                     <div className="users flex flex-wrap gap-4" style={{paddingInline: "1rem"}}>
                         {videos.map((video) => (
                             <div key={video.socketId} className="ind-user">
@@ -480,7 +480,7 @@ import { useNavigate } from "react-router-dom";
                                         }
                                     }}
                                     autoPlay
-                                    muted
+                                    
                                 >
                                 </video>
                             </div>
